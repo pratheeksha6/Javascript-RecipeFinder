@@ -1,21 +1,19 @@
 //import 'core-js/stable';
 //import 'regenerator-runtime/runtime';
 import * as model from './model.js';
+import { MODAL_CLOSE_SEC } from './config.js';
 import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js';
 import bookmarksView from './views/bookmarksView.js';
 import paginationView from './views/paginationView.js';
+import addRecipeView from './views/addRecipeView.js';
 
 // https://forkify-api.herokuapp.com/v2
 
 const recipeContainer = document.querySelector('.recipe');
 
 ///////////////////////////////////////
-
-//if (module.hot) {
-//  module.hot.accept();
-//}
 
 const controlRecipes = async function () {
   try {
@@ -37,6 +35,7 @@ const controlRecipes = async function () {
     recipeView.render(model.state.recipe);
   } catch (err) {
     recipeView.renderError();
+    console.error(err);
   }
 };
 
@@ -48,7 +47,7 @@ const controlSearchResults = async function () {
     if (!query) return;
 
     //2.load search results
-    await model.loadSearchResults('pizza');
+    await model.loadSearchResults(query);
 
     //3.render results
     console.log(model.state.search.results);
@@ -91,6 +90,36 @@ const controlBookmarks = function () {
   bookmarksView.render(model.state.bookmarks);
 };
 
+const controlAddRecipe = async function (newRecipe) {
+  try {
+    //show loading spinner
+    addRecipeView.renderSpinner();
+
+    //upload the new recipe data
+    await model.uploadRecipe(newRecipe);
+
+    //render recipe
+    recipeView.render(model.state.recipe);
+
+    //success message
+    addRecipeView.renderMessage();
+
+    //render the bookmark view
+    bookmarksView.render(model.state.bookmarks);
+
+    //change ID in URL
+    window.history.pushState(null, '', `#${model.state.recipe.id}`);
+
+    //close model window
+    setTimeout(function () {
+      addRecipeView.toggleWindow();
+    }, MODAL_CLOSE_SEC * 1000);
+  } catch (err) {
+    console.error(err);
+    addRecipeView.renderError(err.message);
+  }
+};
+
 const init = function () {
   bookmarksView.addHandlerRender(controlBookmarks);
   recipeView.addHandlerRender(controlRecipes);
@@ -98,6 +127,7 @@ const init = function () {
   recipeView.addHandlerAddBookmark(controlAddBookmark);
   searchView.addHandlerSearch(controlSearchResults);
   paginationView.addHandlerClick(controlPagination);
+  addRecipeView.addHandlerUpload(controlAddRecipe);
 };
 
 init();

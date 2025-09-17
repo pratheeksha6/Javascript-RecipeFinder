@@ -20,7 +20,7 @@ class PaginationView extends View {
     );
     console.log(numPages);
     // page 1 , there are other pages
-    if (this.curPage === 1 && numPages > 1) {
+    if (curPage === 1 && numPages > 1) {
       return ` 
        <button data-goto='${
          curPage + 1
@@ -33,7 +33,7 @@ class PaginationView extends View {
     }
 
     //last page
-    if (this.curPage === numPages && numPages > 1) {
+    if (curPage === numPages && numPages > 1) {
       return `
         <button data-goto='${
           curPage - 1
@@ -45,7 +45,7 @@ class PaginationView extends View {
         </button>`;
     }
     //in between page
-    if (this.curPage < numPages) {
+    if (curPage < numPages) {
       return `
       <button data-goto='${
         curPage - 1
